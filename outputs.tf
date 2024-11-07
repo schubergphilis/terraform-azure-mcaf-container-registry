@@ -1,9 +1,9 @@
 output "azure_container_registry_admin_username" {
-  value = one(azurerm_container_registry.this.admin_username)
+  value = try(azurerm_container_registry.this.admin_username, null)
 }
 
 output "azure_container_registry_admin_password" {
-  value = one(azurerm_container_registry.this.admin_password)
+  value = try(azurerm_container_registry.this.admin_password, null)
 }
 
 output "name" {
@@ -28,5 +28,5 @@ output "resource_id" {
 
 output "system_assigned_mi_principal_id" {
   description = "The system assigned managed identity principal ID of the parent resource."
-  value       = one(azurerm_container_registry.this.identity[0].principal_id)
+  value       = try(azurerm_container_registry.this.identity[0].principal_id, null)
 }
