@@ -13,7 +13,7 @@ resource "azurerm_container_registry" "this" {
   admin_enabled                 = var.acr.admin_enabled
   anonymous_pull_enabled        = var.acr.anonymous_pull_enabled
   retention_policy_in_days      = var.acr.retention_policy_in_days
-  export_policy_enabled         = var.acr.export_policy_enabled
+  export_policy_enabled         = var.acr.public_network_access_enabled ? true : var.acr.export_policy_enabled
   network_rule_bypass_option    = var.acr.network_rule_bypass_option
   public_network_access_enabled = var.acr.public_network_access_enabled
   quarantine_policy_enabled     = var.acr.quarantine_policy_enabled
