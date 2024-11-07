@@ -9,14 +9,11 @@ module "acr" {
     name                = "myacr"
     resource_group_name = "myrg"
     location            = "germanywestcentral"
-    sku                 = "Premium"
     admin_enabled       = false
-    network_rule_set = {
-      default_action = "Allow"
-      ip_rule = [{
-        action   = "Allow"
-        ip_range = join(",", "1.2.3.4")
-      }]
-    }
+    public_network_access_enabled = false
+    network_rule_bypass_option    = "AzureServices"
+  }
+  tags = {
+    "deploymentmodel" = "Terraform"
   }
 }
