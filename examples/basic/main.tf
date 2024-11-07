@@ -1,12 +1,19 @@
 terraform {
   required_version = ">= 1.8"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 4, < 5.0.0"
+    }
+  }
 }
 
 module "acr" {
   source = "../.."
 
   acr = {
-    name                          = "myacr"
+    name                          = "myacr123"
     resource_group_name           = "myrg"
     location                      = "germanywestcentral"
     admin_enabled                 = false
