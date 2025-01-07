@@ -41,7 +41,7 @@ resource "azurerm_container_registry" "this" {
   }
 
   dynamic "identity" {
-    for_each = local.acr_managed_identities.system_assigned_user_assigned
+    for_each = local.acr_managed_identities.user_assigned
 
     content {
       type         = identity.value.type
