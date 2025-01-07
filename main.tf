@@ -25,7 +25,7 @@ resource "azurerm_container_registry" "this" {
 
     content {
       identity_client_id = data.azurerm_user_assigned_identity.this[0].client_id
-      key_vault_key_id   = data.azurerm_key_vault_key.this[0].id
+      key_vault_key_id   = data.azurerm_key_vault_key.this[0].versionless_id
     }
   }
 
@@ -41,7 +41,7 @@ resource "azurerm_container_registry" "this" {
   }
 
   dynamic "identity" {
-    for_each = local.acr_managed_identities.system_assigned_user_assigned
+    for_each = coalesce(local.identity_system_assigned_user_assigned, local.identity_system_assigned, local.identity_user_assigned, {})
 
     content {
       type         = identity.value.type
