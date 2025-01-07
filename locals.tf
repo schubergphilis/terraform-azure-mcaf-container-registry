@@ -2,8 +2,8 @@ locals {
   acr_managed_identities = {
     system_assigned_user_assigned = (var.acr.managed_identities.system_assigned || length(var.acr.managed_identities.user_assigned_resource_ids) > 0) ? {
       this = {
-        type                       = var.acr.managed_identities.system_assigned && (length(var.acr.managed_identities.user_assigned_resource_ids) || var.customer_managed_key.user_assigned_identity != null) > 0 ? "SystemAssigned, UserAssigned" : length(var.acr.managed_identities.user_assigned_resource_ids) > 0 ? "UserAssigned" : "SystemAssigned"
-        user_assigned_resource_ids = var.acr.managed_identities.user_assigned_resource_ids
+        type                       = var.acr.managed_identities.system_assigned && (length(var.acr.managed_identities.user_assigned_resource_ids) > 0 || var.customer_managed_key.user_assigned_identity != null) ? "SystemAssigned, UserAssigned" : length(var.acr.managed_identities.user_assigned_resource_ids) > 0 ? "UserAssigned" : "SystemAssigned"
+        user_assigned_resource_ids = distinct(flatten(var.acr.managed_identities.user_assigned_resource_ids, var.customer_managed_key.user_assigned_identity != null ? [data.azurerm_user_assigned_identity.this[0].id] : []))
       }
     } : {}
     system_assigned = var.acr.managed_identities.system_assigned ? {
@@ -11,10 +11,10 @@ locals {
         type = "SystemAssigned"
       }
     } : {}
-    user_assigned = length(var.acr.managed_identities.user_assigned_resource_ids) > 0 ? {
+    user_assigned = (length(var.acr.managed_identities.user_assigned_resource_ids) > 0 || var.customer_managed_key.user_assigned_identity != null) ? {
       this = {
         type                       = "UserAssigned"
-        user_assigned_resource_ids = var.acr.managed_identities.user_assigned_resource_ids
+        user_assigned_resource_ids = distinct(flatten(var.acr.managed_identities.user_assigned_resource_ids, var.customer_managed_key.user_assigned_identity != null ? [data.azurerm_user_assigned_identity.this[0].id] : []))
       }
     } : {}
   }
