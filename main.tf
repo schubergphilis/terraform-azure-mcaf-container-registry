@@ -41,7 +41,7 @@ resource "azurerm_container_registry" "this" {
   }
 
   dynamic "identity" {
-    for_each = coalesce(local.system_assigned_user_assigned, local.system_assigned, local.user_assigned)
+    for_each = coalesce(local.identity_system_assigned_user_assigned, local.identity_system_assigned, local.identity_user_assigned, {})
 
     content {
       type         = identity.value.type
