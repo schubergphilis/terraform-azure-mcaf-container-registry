@@ -1,9 +1,9 @@
 locals {
   acr_managed_identities = {
-    system_assigned_user_assigned = (var.acr.managed_identities.system_assigned || length(var.acr.managed_identities.user_assigned_resource_ids) > 0) ? {
+    system_assigned_user_assigned = (var.acr.managed_identities.system_assigned && (length(var.acr.managed_identities.user_assigned_resource_ids) > 0 || var.customer_managed_key.user_assigned_identity != null) ? {
       this = {
-        type                       = var.acr.managed_identities.system_assigned && (length(var.acr.managed_identities.user_assigned_resource_ids) > 0 || var.customer_managed_key.user_assigned_identity != null) ? "SystemAssigned, UserAssigned" : length(var.acr.managed_identities.user_assigned_resource_ids) > 0 ? "UserAssigned" : "SystemAssigned"
-        user_assigned_resource_ids = distinct(flatten(var.acr.managed_identities.user_assigned_resource_ids, var.customer_managed_key.user_assigned_identity != null ? [data.azurerm_user_assigned_identity.this[0].id] : []))
+        type                       = "SystemAssigned, UserAssigned"
+        user_assigned_resource_ids = distinct(flatten(var.acr.managed_identities.user_assigned_resource_ids, try([data.azurerm_user_assigned_identity.this[0].id],[]))
       }
     } : {}
     system_assigned = var.acr.managed_identities.system_assigned ? {
@@ -14,7 +14,7 @@ locals {
     user_assigned = (length(var.acr.managed_identities.user_assigned_resource_ids) > 0 || var.customer_managed_key.user_assigned_identity != null) ? {
       this = {
         type                       = "UserAssigned"
-        user_assigned_resource_ids = distinct(flatten(var.acr.managed_identities.user_assigned_resource_ids, var.customer_managed_key.user_assigned_identity != null ? [data.azurerm_user_assigned_identity.this[0].id] : []))
+        user_assigned_resource_ids = distinct(flatten(var.acr.managed_identities.user_assigned_resource_ids, try([data.azurerm_user_assigned_identity.this[0].id],[]))
       }
     } : {}
   }
