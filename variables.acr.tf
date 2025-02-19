@@ -96,7 +96,7 @@ ACR_DETAILS
     error_message = "The name must be between 5 and 50 characters long and can only contain letters and numbers."
   }
   validation {
-    condition     = each.value.role_definition_name == "AcrPush" || each.value.role_definition_name == "AcrPull"
+    condition     = var.acr.role_assignments.role_definition_name == "AcrPush" || var.acr.role_assignments.role_definition_name == "AcrPull"
     error_message = "The role definition must be either 'AcrPull' or 'AcrPush'."
   }
 }
