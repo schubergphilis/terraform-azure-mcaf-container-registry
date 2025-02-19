@@ -34,7 +34,6 @@ variable "acr" {
     role_assignments = optional(map(object({
       principal_id         = string
       role_definition_name = string
-      role                 = string
     })))
     tags = optional(map(string))
   })
