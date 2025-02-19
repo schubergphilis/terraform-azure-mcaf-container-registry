@@ -95,6 +95,10 @@ ACR_DETAILS
     condition     = can(regex("^[[:alnum:]]{5,50}$", var.acr.name))
     error_message = "The name must be between 5 and 50 characters long and can only contain letters and numbers."
   }
+  validation {
+    condition     = each.value.role_definition_name == "AcrPush" || each.value.role_definition_name == "AcrPull"
+    error_message = "The role definition must be either 'AcrPull' or 'AcrPush'."
+  }
 }
 
 variable "customer_managed_key" {
