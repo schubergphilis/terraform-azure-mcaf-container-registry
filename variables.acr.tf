@@ -32,8 +32,9 @@ variable "acr" {
     })), [])
     zone_redundancy_enabled = optional(bool, true)
     role_assignments = optional(map(object({
-      principal_id = string
-      role         = string
+      principal_id         = string
+      role_definition_name = string
+      role                 = string
     })))
     tags = optional(map(string))
   })
