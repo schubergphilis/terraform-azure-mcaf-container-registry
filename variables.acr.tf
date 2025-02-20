@@ -32,8 +32,8 @@ variable "acr" {
     })), [])
     zone_redundancy_enabled = optional(bool, true)
     role_assignments = optional(map(object({
-      principal_id = string
-      role         = string
+      principal_id         = string
+      role_definition_name = string
     })))
     tags = optional(map(string))
   })
@@ -94,6 +94,10 @@ ACR_DETAILS
   validation {
     condition     = can(regex("^[[:alnum:]]{5,50}$", var.acr.name))
     error_message = "The name must be between 5 and 50 characters long and can only contain letters and numbers."
+  }
+  validation {
+    condition     = alltrue([for ra in var.acr.role_assignments : ra.role_definition_name == "AcrPush" || ra.role_definition_name == "AcrPull"])
+    error_message = "All role definitions must be either 'AcrPull' or 'AcrPush'."
   }
 }
 

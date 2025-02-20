@@ -108,18 +108,7 @@ resource "azurerm_role_assignment" "acr" {
 
   scope                = azurerm_container_registry.this.id
   role_definition_name = each.value.role_definition_name
-  principal_id         = each.value.id
-
-  lifecycle {
-    precondition {
-      condition     = each.value.role_definition_name == "AcrPush" || each.value.role_definition_name == "AcrPull"
-      error_message = "The role definition must be either 'AcrPull' or 'AcrPush'."
-    }
-    precondition {
-      condition     = can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", each.value.id))
-      error_message = "The principal ID must be a valid object ID or principal ID."
-    }
-  }
+  principal_id         = each.value.principal_id
 }
 
 resource "azurerm_monitor_diagnostic_setting" "this" {
