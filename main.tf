@@ -111,6 +111,23 @@ resource "azurerm_role_assignment" "acr" {
   principal_id         = each.value.principal_id
 }
 
+# Private Endpoint
+resource "azurerm_private_endpoint" "this" {
+  count = var.acr.public_network_access_enabled == true ? 0 : 1
+
+  name                          = "${var.acr.name}-pep"
+  location                      = var.acr.location == null ? azurerm_resource_group.this[0].location : var.acr.location
+  resource_group_name           = var.acr.resource_group_name == null ? azurerm_resource_group.this[0].name : var.acr.resource_group_name
+  subnet_id                     = azurerm_subnet.pe_subnet.id
+
+  private_service_connection {
+    name                           = azurerm_private_endpoint.this.name
+    private_connection_resource_id = azurerm_container_registry.this.id
+    is_manual_connection           = false
+    subresource_names              = ["registry"]
+  }
+}
+
 resource "azurerm_monitor_diagnostic_setting" "this" {
   for_each = var.diagnostic_settings
 
