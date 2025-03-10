@@ -121,7 +121,7 @@ resource "azurerm_private_endpoint" "this" {
   subnet_id                     = var.acr.pe_subnet
 
   private_service_connection {
-    name                           = azurerm_private_endpoint.this[count.index].name
+    name                           = "${var.acr.name}-pep"
     private_connection_resource_id = azurerm_container_registry.this.id
     is_manual_connection           = false
     subresource_names              = ["registry"]
