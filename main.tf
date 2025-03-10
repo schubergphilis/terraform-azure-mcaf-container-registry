@@ -112,19 +112,29 @@ resource "azurerm_role_assignment" "acr" {
 }
 
 # Private Endpoint
-resource "azurerm_private_endpoint" "this" {
+
+module "private_endpoints" {
+  source = "github.com/schubergphilis/terraform-azure-mcaf-private-endpoints?ref=v0.4.1"
+
   count = var.acr.public_network_access_enabled == true ? 0 : 1
 
-  name                          = "${var.acr.name}-pep"
   location                      = var.acr.location == null ? azurerm_resource_group.this[0].location : var.acr.location
   resource_group_name           = var.acr.resource_group_name == null ? azurerm_resource_group.this[0].name : var.acr.resource_group_name
-  subnet_id                     = var.acr.pe_subnet
-
-  private_service_connection {
-    name                           = "${var.acr.name}-pep"
-    private_connection_resource_id = azurerm_container_registry.this.id
-    is_manual_connection           = false
-    subresource_names              = ["registry"]
+  
+  private_endpoints = {
+    "${var.acr.name}-pep" = {
+      private_connection_resource_id = azurerm_container_registry.this.id
+      subnet_id = var.acr.pe_subnet
+      subresource_name = "registry"
+      is_manual_connection = false
+      private_endpoints_manage_dns_zone_group = false
+      tags = merge(
+        var.tags,
+        tomap({
+          "ResourceType" = "Container Registry"
+        })
+      )
+    }
   }
 }
 
