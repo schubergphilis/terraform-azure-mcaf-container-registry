@@ -150,7 +150,7 @@ resource "azurerm_container_registry_credential_set" "credential_set" {
   for_each = { for idx, cred in var.credential_sets : cred.name => cred }
   
   name                  = each.value.name
-  container_registry_id = azurerm_container_registry.acr.id
+  container_registry_id = azurerm_container_registry.this.id
   login_server          = each.value.login_server
   
   identity {
@@ -170,7 +170,7 @@ resource "azurerm_container_registry_cache_rule" "this" {
   for_each = { for idx, rule in var.cache_rules : rule.name => rule }
   
   name                  = each.value.name
-  container_registry_id = azurerm_container_registry.acr.id
+  container_registry_id = azurerm_container_registry.this.id
   target_repo           = each.value.target_repo
   source_repo           = each.value.source_repo
   credential_set_id     = each.value.credential_set_name != null ? "${azurerm_container_registry.this.id}/credentialSets/${each.value.credential_set_name}" : null
