@@ -145,3 +145,33 @@ resource "azurerm_monitor_diagnostic_setting" "this" {
     }
   }
 }
+
+resource "azurerm_container_registry_credential_set" "credential_set" {
+  for_each = { for idx, cred in var.credential_sets : cred.name => cred }
+  
+  name                  = each.value.name
+  container_registry_id = azurerm_container_registry.acr.id
+  login_server          = each.value.login_server
+  
+  identity {
+    type         = "SystemAssigned"
+  }
+  
+  dynamic "authentication_credentials" {
+    for_each = each.value.authentication_credentials != null ? [each.value.authentication_credentials] : []
+    content {
+      username_secret_id = authentication_credentials.value.username_secret_id
+      password_secret_id = authentication_credentials.value.password_secret_id
+    }
+  }
+}
+
+resource "azurerm_container_registry_cache_rule" "this" {
+  for_each = { for idx, rule in var.cache_rules : rule.name => rule }
+  
+  name                  = each.value.name
+  container_registry_id = azurerm_container_registry.acr.id
+  target_repo           = each.value.target_repo
+  source_repo           = each.value.source_repo
+  credential_set_id     = each.value.credential_set_name != null ? "${azurerm_container_registry.acr.id}/credentialSets/${each.value.credential_set_name}" : null
+}

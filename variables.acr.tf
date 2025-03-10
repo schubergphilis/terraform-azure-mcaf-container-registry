@@ -121,3 +121,91 @@ Controls the Customer managed key configuration on this resource. The following 
   - `resource_id` - (Required) The resource ID of the User Assigned Identity that has access to the key.
 DESCRIPTION
 }
+
+variable "credential_sets" {
+  type = list(object({
+    name         = string
+    login_server = string
+    authentication_credentials = optional(object({
+      username_secret_id = string
+      password_secret_id = string
+    }))
+  }))
+  default = []
+  description = <<CREDENTIAL_SETS_DETAILS
+This variable describes the configuration for credential sets in an Azure Container Registry.
+
+- `name` - (Required) Specifies the name of the Credential Set. Changing this forces a new resource to be created.
+- `login_server` - (Required) Specifies the login server for the credential set, such as "docker.io" or "ghcr.io".
+- `authentication_credentials` - (Optional) Specifies the authentication credentials configuration. The following properties can be specified:
+  - `username_secret_id` - (Required) Specifies the Key Vault Secret URL containing the username for the external registry.
+  - `password_secret_id` - (Required) Specifies the Key Vault Secret URL containing the password for the external registry.
+
+Example Inputs:
+```hcl
+module "acr" {
+  source = "somelocation"
+  
+  credential_sets = [
+    {
+      name         = "dockerhub"
+      login_server = "docker.io"
+      authentication_credentials = {
+        username_secret_id = "https://example-keyvault.vault.azure.net/secrets/docker-username"
+        password_secret_id = "https://example-keyvault.vault.azure.net/secrets/docker-password"
+      }
+    },
+    {
+      name         = "ghcr"
+      login_server = "ghcr.io"
+      identity = {
+        type = "UserAssigned"
+        identity_ids = ["id1", "id2"]
+      }
+    }
+  ]
+}
+CREDENTIAL_SETS_DETAILS
+}
+
+variable "cache_rules" {
+  type = list(object({
+    name        = string
+    target_repo = string
+    source_repo = string
+    credential_set_name = optional(string)
+  }))
+  default = []
+  description = <<CACHE_RULES_DETAILS
+This variable describes the configuration for cache rules in an Azure Container Registry.
+
+    name - (Required) Specifies the name of the Cache Rule. Changing this forces a new resource to be created.
+    target_repo - (Required) Specifies the target repository name in the Azure Container Registry where cached images will be stored.
+    source_repo - (Required) Specifies the source repository name to be cached, including the fully qualified registry hostname (e.g., "docker.io/hello-world").
+    credential_set_name - (Optional) Specifies the name of the credential set to use for authentication with the source repository. If provided, the credential set must be defined in the credential_sets variable.
+
+Example Inputs:
+
+hcl
+
+module "acr" {
+  source = "somelocation"
+  
+  cache_rules = [
+    {
+      name                = "cache-nginx"
+      target_repo         = "nginx"
+      source_repo         = "docker.io/nginx"
+      credential_set_name = "dockerhub"
+    },
+    {
+      name                = "cache-ubuntu"
+      target_repo         = "ubuntu"
+      source_repo         = "docker.io/ubuntu"
+      credential_set_name = "dockerhub"
+    }
+  ]
+}
+
+CACHE_RULES_DETAILS
+}
