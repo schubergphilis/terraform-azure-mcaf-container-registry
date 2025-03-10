@@ -118,10 +118,10 @@ resource "azurerm_private_endpoint" "this" {
   name                          = "${var.acr.name}-pep"
   location                      = var.acr.location == null ? azurerm_resource_group.this[0].location : var.acr.location
   resource_group_name           = var.acr.resource_group_name == null ? azurerm_resource_group.this[0].name : var.acr.resource_group_name
-  subnet_id                     = azurerm_subnet.pe_subnet.id
+  subnet_id                     = var.acr.pe_subnet
 
   private_service_connection {
-    name                           = azurerm_private_endpoint.this.name
+    name                           = azurerm_private_endpoint.this[count.index].name
     private_connection_resource_id = azurerm_container_registry.this.id
     is_manual_connection           = false
     subresource_names              = ["registry"]

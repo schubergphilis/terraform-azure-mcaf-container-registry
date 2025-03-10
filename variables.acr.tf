@@ -24,6 +24,7 @@ variable "acr" {
         ip_range = string
       })), [])
     }), null)
+    pe_subnet = optional(string, null)
     georeplications = optional(list(object({
       location                  = string
       regional_endpoint_enabled = optional(bool, true)
