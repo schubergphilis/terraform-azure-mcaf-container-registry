@@ -111,6 +111,33 @@ resource "azurerm_role_assignment" "acr" {
   principal_id         = each.value.principal_id
 }
 
+# Private Endpoint
+
+module "private_endpoints" {
+  source = "github.com/schubergphilis/terraform-azure-mcaf-private-endpoints?ref=v0.4.1"
+
+  count = var.acr.public_network_access_enabled == true ? 0 : 1
+
+  location                      = var.acr.location == null ? azurerm_resource_group.this[0].location : var.acr.location
+  resource_group_name           = var.acr.resource_group_name == null ? azurerm_resource_group.this[0].name : var.acr.resource_group_name
+  
+  private_endpoints = {
+    "${var.acr.name}-pep" = {
+      private_connection_resource_id = azurerm_container_registry.this.id
+      subnet_id = var.acr.pe_subnet
+      subresource_name = "registry"
+      is_manual_connection = false
+      private_endpoints_manage_dns_zone_group = false
+      tags = merge(
+        var.tags,
+        tomap({
+          "ResourceType" = "Container Registry"
+        })
+      )
+    }
+  }
+}
+
 resource "azurerm_monitor_diagnostic_setting" "this" {
   for_each = var.diagnostic_settings
 
@@ -144,4 +171,34 @@ resource "azurerm_monitor_diagnostic_setting" "this" {
       category = metric.value
     }
   }
+}
+
+resource "azurerm_container_registry_credential_set" "credential_set" {
+  for_each = { for idx, cred in var.credential_sets : cred.name => cred }
+  
+  name                  = each.value.name
+  container_registry_id = azurerm_container_registry.this.id
+  login_server          = each.value.login_server
+  
+  identity {
+    type         = "SystemAssigned"
+  }
+  
+  dynamic "authentication_credentials" {
+    for_each = each.value.authentication_credentials != null ? [each.value.authentication_credentials] : []
+    content {
+      username_secret_id = authentication_credentials.value.username_secret_id
+      password_secret_id = authentication_credentials.value.password_secret_id
+    }
+  }
+}
+
+resource "azurerm_container_registry_cache_rule" "this" {
+  for_each = { for idx, rule in var.cache_rules : rule.name => rule }
+  
+  name                  = each.value.name
+  container_registry_id = azurerm_container_registry.this.id
+  target_repo           = each.value.target_repo
+  source_repo           = each.value.source_repo
+  credential_set_id     = each.value.credential_set_name != null ? "${azurerm_container_registry.this.id}/credentialSets/${each.value.credential_set_name}" : null
 }
